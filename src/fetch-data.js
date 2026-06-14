@@ -30,8 +30,10 @@ const fs = require("fs");
 const path = require("path");
 
 const HERE = __dirname;
-const HTML_PATH = path.join(HERE, "index-simulator.html");
-const OUT_PATH  = path.join(HERE, "data.js");
+const OUT_PATH = path.join(HERE, "data.js");
+
+// Ticker universe + benchmark symbols — the single source of truth, shared with the app.
+const { UNIVERSE, BENCH } = require("./universe.js");
 
 /* ---------- args ---------- */
 const argv = Object.fromEntries(process.argv.slice(2).map(a => {
@@ -52,17 +54,6 @@ if (typeof fetch !== "function") {
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const pad2 = n => String(n).padStart(2, "0");
 const ymd = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-
-/* ---------- single source of truth: parse UNIVERSE + BENCH out of the HTML ----------
-   Keeps the ticker list from drifting away from the app. We only evaluate the two
-   literal blocks we control, never arbitrary page script. */
-function loadUniverse() {
-  const src = fs.readFileSync(HTML_PATH, "utf8");
-  const uni = src.match(/const\s+UNIVERSE\s*=\s*(\[[\s\S]*?\]);/);
-  const ben = src.match(/const\s+BENCH\s*=\s*(\{[\s\S]*?\});/);
-  if (!uni || !ben) throw new Error("Could not find UNIVERSE / BENCH literals in " + HTML_PATH);
-  return { UNIVERSE: new Function("return " + uni[1])(), BENCH: new Function("return " + ben[1])() };
-}
 
 /* ---------- network ---------- */
 const HEADERS = { "User-Agent": UA, "Accept": "application/json", "Accept-Language": "en-US,en;q=0.9" };
@@ -143,8 +134,6 @@ function trimMonths(series) {
 
 /* ---------- main ---------- */
 (async function main() {
-  const { UNIVERSE, BENCH } = loadUniverse();
-
   const today = new Date();
   const todate = ymd(today);
   const from = new Date(today); from.setFullYear(from.getFullYear() - HISTORY_YEARS);

@@ -63,13 +63,18 @@ You can also drag Stooq CSV files into the app's manual-import dropzone to overr
 
 ## Project layout
 
+No build step — the browser loads these files directly via classic `<script>`/`<link>` tags (so it also works over `file://`):
+
 ```
 src/
-  index-simulator.html   # the app — HTML + CSS + all logic in one inline <script>
-  fetch-data.js          # Node script that builds the price bundle
+  index-simulator.html   # markup + <link>/<script> tags (no logic of its own)
+  styles.css             # all styling (dark theme via CSS variables)
+  universe.js            # S&P 100 ticker list + benchmarks (shared with the Node tooling)
+  engine.js              # the index simulation + statistics — pure functions, the one copy
+  app.js                 # stock picker, data loading, run/render, DOM wiring
   data.js                # generated price bundle (window.PRICE_DATA)
-  engine.test.js         # tests for the simulation/statistics engine
-  _inline.js             # extracted copy of the app's inline script (for reading/diffing)
+  fetch-data.js          # Node script that builds the price bundle
+  engine.test.js         # tests — imports engine.js directly
 ```
 
 ## Tests

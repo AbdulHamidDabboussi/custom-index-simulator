@@ -1,115 +1,9 @@
-
 /* ============================================================
-   S&P 100 universe: ticker, name, sector, approx shares out (billions)
-   Share counts are approximate (circa 2024-25), used only for
-   market-cap weighting; they are editable in spirit via Custom mode.
+   App: stock picker, data loading, run/render, and DOM wiring.
+   Depends on globals from universe.js (UNIVERSE, BENCH) and
+   engine.js (simulate, stats, buildMonthAxis, seriesMap, rebaseToBench).
+   Loaded last, after the DOM and the other scripts.
    ============================================================ */
-const UNIVERSE = [
- ["AAPL","Apple","Information Technology",15.0],
- ["MSFT","Microsoft","Information Technology",7.43],
- ["NVDA","NVIDIA","Information Technology",24.6],
- ["AVGO","Broadcom","Information Technology",4.66],
- ["ORCL","Oracle","Information Technology",2.77],
- ["CRM","Salesforce","Information Technology",0.96],
- ["ADBE","Adobe","Information Technology",0.44],
- ["AMD","Advanced Micro Devices","Information Technology",1.62],
- ["CSCO","Cisco","Information Technology",4.0],
- ["ACN","Accenture","Information Technology",0.63],
- ["INTC","Intel","Information Technology",4.23],
- ["TXN","Texas Instruments","Information Technology",0.91],
- ["QCOM","Qualcomm","Information Technology",1.11],
- ["IBM","IBM","Information Technology",0.92],
- ["INTU","Intuit","Information Technology",0.28],
- ["AMZN","Amazon","Consumer Discretionary",10.5],
- ["TSLA","Tesla","Consumer Discretionary",3.19],
- ["HD","Home Depot","Consumer Discretionary",0.99],
- ["MCD","McDonald's","Consumer Discretionary",0.72],
- ["NKE","Nike","Consumer Discretionary",1.49],
- ["LOW","Lowe's","Consumer Discretionary",0.57],
- ["BKNG","Booking Holdings","Consumer Discretionary",0.033],
- ["SBUX","Starbucks","Consumer Discretionary",1.14],
- ["TGT","Target","Consumer Discretionary",0.46],
- ["GM","General Motors","Consumer Discretionary",1.15],
- ["F","Ford","Consumer Discretionary",3.97],
- ["GOOGL","Alphabet A","Communication Services",5.8],
- ["GOOG","Alphabet C","Communication Services",5.5],
- ["META","Meta Platforms","Communication Services",2.30],
- ["NFLX","Netflix","Communication Services",0.43],
- ["DIS","Walt Disney","Communication Services",1.81],
- ["CMCSA","Comcast","Communication Services",3.8],
- ["T","AT&T","Communication Services",7.16],
- ["VZ","Verizon","Communication Services",4.21],
- ["TMUS","T-Mobile US","Communication Services",1.16],
- ["CHTR","Charter Communications","Communication Services",0.14],
- ["BRK.B","Berkshire Hathaway B","Financials",2.16],
- ["JPM","JPMorgan Chase","Financials",2.86],
- ["V","Visa","Financials",2.0],
- ["MA","Mastercard","Financials",0.93],
- ["BAC","Bank of America","Financials",7.9],
- ["WFC","Wells Fargo","Financials",3.4],
- ["GS","Goldman Sachs","Financials",0.33],
- ["MS","Morgan Stanley","Financials",1.63],
- ["SCHW","Charles Schwab","Financials",1.82],
- ["AXP","American Express","Financials",0.72],
- ["C","Citigroup","Financials",1.91],
- ["BLK","BlackRock","Financials",0.149],
- ["SPG","Simon Property Group","Real Estate",0.33],
- ["BK","Bank of NY Mellon","Financials",0.73],
- ["USB","U.S. Bancorp","Financials",1.56],
- ["COF","Capital One","Financials",0.38],
- ["MET","MetLife","Financials",0.71],
- ["AIG","American Intl Group","Financials",0.65],
- ["LLY","Eli Lilly","Health Care",0.95],
- ["UNH","UnitedHealth","Health Care",0.92],
- ["JNJ","Johnson & Johnson","Health Care",2.41],
- ["ABBV","AbbVie","Health Care",1.77],
- ["MRK","Merck","Health Care",2.53],
- ["TMO","Thermo Fisher","Health Care",0.38],
- ["ABT","Abbott","Health Care",1.74],
- ["DHR","Danaher","Health Care",0.72],
- ["PFE","Pfizer","Health Care",5.68],
- ["AMGN","Amgen","Health Care",0.54],
- ["MDT","Medtronic","Health Care",1.28],
- ["GILD","Gilead Sciences","Health Care",1.25],
- ["BMY","Bristol-Myers Squibb","Health Care",2.03],
- ["CVS","CVS Health","Health Care",1.26],
- ["ISRG","Intuitive Surgical","Health Care",0.357],
- ["XOM","Exxon Mobil","Energy",4.3],
- ["CVX","Chevron","Energy",1.84],
- ["COP","ConocoPhillips","Energy",1.18],
- ["WMT","Walmart","Consumer Staples",8.04],
- ["PG","Procter & Gamble","Consumer Staples",2.36],
- ["COST","Costco","Consumer Staples",0.443],
- ["KO","Coca-Cola","Consumer Staples",4.31],
- ["PEP","PepsiCo","Consumer Staples",1.37],
- ["PM","Philip Morris Intl","Consumer Staples",1.55],
- ["MDLZ","Mondelez","Consumer Staples",1.33],
- ["MO","Altria","Consumer Staples",1.70],
- ["CL","Colgate-Palmolive","Consumer Staples",0.82],
- ["KHC","Kraft Heinz","Consumer Staples",1.20],
- ["GE","GE Aerospace","Industrials",1.08],
- ["CAT","Caterpillar","Industrials",0.49],
- ["HON","Honeywell","Industrials",0.65],
- ["UNP","Union Pacific","Industrials",0.61],
- ["RTX","RTX Corp","Industrials",1.34],
- ["BA","Boeing","Industrials",0.61],
- ["DE","Deere","Industrials",0.275],
- ["LMT","Lockheed Martin","Industrials",0.24],
- ["UPS","United Parcel Service","Industrials",0.86],
- ["GD","General Dynamics","Industrials",0.27],
- ["EMR","Emerson Electric","Industrials",0.57],
- ["MMM","3M","Industrials",0.55],
- ["FDX","FedEx","Industrials",0.24],
- ["LIN","Linde","Materials",0.48],
- ["DOW","Dow Inc","Materials",0.70],
- ["NEE","NextEra Energy","Utilities",2.05],
- ["SO","Southern Co","Utilities",1.09],
- ["DUK","Duke Energy","Utilities",0.77],
- ["AMT","American Tower","Real Estate",0.467],
- ["PYPL","PayPal","Financials",1.0]
-];
-const BENCH = {SPY:"spy.us", QQQ:"qqq.us"};
-
 /* ---------- state ---------- */
 const selected = new Map();   // ticker -> {customW}
 const priceCache = {};        // ticker -> [{ym, close}]
@@ -215,91 +109,6 @@ function ingestCSVFile(name, text){
 }
 
 /* ============================================================
-   INDEX ENGINE
-   ============================================================ */
-function buildMonthAxis(seriesList, years){
-  // common months = those present in ALL series; restrict to last `years`
-  let common=null;
-  seriesList.forEach(s=>{
-    const set=new Set(s.map(p=>p.ym));
-    common = common? new Set([...common].filter(x=>set.has(x))) : set;
-  });
-  let months=[...common].sort();
-  if(years>0 && months.length> years*12+1) months=months.slice(months.length-(years*12+1));
-  return months;
-}
-function seriesMap(s){ const m={}; s.forEach(p=>m[p.ym]=p.close); return m; }
-
-function simulate(tickers, months, weightMode, rebalN){
-  // returns {index:[], weightsAtStart:{}}
-  const maps={}; tickers.forEach(t=>maps[t]=seriesMap(priceCache[t]));
-  const sharesOut={}; UNIVERSE.forEach(([t,,,sh])=>sharesOut[t]=sh);
-
-  // target weights function at month index k (uses prices at months[k])
-  function targetWeights(k){
-    const ym=months[k]; const w={};
-    if(weightMode==="cap"){
-      let tot=0; tickers.forEach(t=>{ const mc=(sharesOut[t]||1)*maps[t][ym]; w[t]=mc; tot+=mc; });
-      tickers.forEach(t=>w[t]/=tot);
-    } else { // custom
-      let given=0, blanks=[];
-      tickers.forEach(t=>{ const cw=selected.get(t)?.customW; if(cw!=null){w[t]=cw;given+=cw;} else blanks.push(t); });
-      const rem=Math.max(0,100-given);
-      blanks.forEach(t=>w[t]=blanks.length?rem/blanks.length:0);
-      let tot=0; tickers.forEach(t=>tot+=w[t]); tickers.forEach(t=>w[t]= tot>0? w[t]/tot : 1/tickers.length);
-    }
-    return w;
-  }
-
-  let V=100, units={};
-  const w0=targetWeights(0);
-  tickers.forEach(t=>units[t]=(w0[t]*V)/maps[t][months[0]]);
-  const index=[100];
-  for(let k=1;k<months.length;k++){
-    const ym=months[k];
-    V=0; tickers.forEach(t=>V+=units[t]*maps[t][ym]);
-    index.push(V);
-    const doRebal = rebalN!=="none" && (k % parseInt(rebalN)===0) && k<months.length-1;
-    if(doRebal){
-      const w=targetWeights(k);
-      tickers.forEach(t=>units[t]=(w[t]*V)/maps[t][ym]);
-    }
-  }
-  return {index, weightsAtStart:w0};
-}
-
-function rebaseToBench(series, months, fullSeriesMap){
-  // build benchmark index rebased to 100 at months[0]
-  const base=fullSeriesMap[months[0]];
-  return months.map(ym=> 100*fullSeriesMap[ym]/base);
-}
-
-/* ---------- statistics ---------- */
-function stats(idx, rf, spyReturns){
-  const n=idx.length;
-  const totalRet=idx[n-1]/idx[0]-1;
-  const yrs=(n-1)/12;
-  const cagr=Math.pow(idx[n-1]/idx[0],1/yrs)-1;
-  const rets=[]; for(let i=1;i<n;i++) rets.push(idx[i]/idx[i-1]-1);
-  const mean=rets.reduce((a,b)=>a+b,0)/rets.length;
-  const variance=rets.reduce((a,b)=>a+(b-mean)**2,0)/rets.length;
-  const vol=Math.sqrt(variance)*Math.sqrt(12);
-  const sharpe=(mean*12 - rf/100)/(vol||1e-9);
-  // max drawdown
-  let peak=idx[0],mdd=0;
-  idx.forEach(v=>{ if(v>peak)peak=v; const dd=v/peak-1; if(dd<mdd)mdd=dd; });
-  // beta vs spy
-  let beta=null;
-  if(spyReturns && spyReturns.length===rets.length){
-    const sm=spyReturns.reduce((a,b)=>a+b,0)/spyReturns.length;
-    let cov=0,vS=0;
-    for(let i=0;i<rets.length;i++){cov+=(rets[i]-mean)*(spyReturns[i]-sm);vS+=(spyReturns[i]-sm)**2;}
-    beta=cov/(vS||1e-9);
-  }
-  return {totalRet,cagr,vol,sharpe,mdd,beta,rets};
-}
-
-/* ============================================================
    RUN
    ============================================================ */
 function setStatus(msg){ $("#status").textContent=msg; }
@@ -334,7 +143,9 @@ function run(){
   const months=buildMonthAxis(axisSeries, years);
   if(months.length<6){ setStatus("Not enough overlapping monthly data across your picks for a meaningful backtest. Try different/longer-history stocks."); return; }
 
-  const {index,weightsAtStart}=simulate(haveTickers, months, weightMode, rebalN);
+  const sharesOut={}; UNIVERSE.forEach(([t,,,sh])=>sharesOut[t]=sh);
+  const customWeights={}; selected.forEach((v,t)=>customWeights[t]=v.customW);
+  const {index,weightsAtStart}=simulate(haveTickers, months, weightMode, rebalN, {priceCache, sharesOut, customWeights});
 
   // benchmarks rebased on same axis
   const datasets=[];
