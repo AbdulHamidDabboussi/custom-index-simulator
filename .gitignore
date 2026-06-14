@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# Claude Code session/audit artifacts (can contain full transcripts)
+audit.jsonl
+.claude/settings.local.json
+
+# Working dir for manually dropped CSVs
+uploads/
+
+# Node (only used by the optional fetch-data.js tooling)
+node_modules/
