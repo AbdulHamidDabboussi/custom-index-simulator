@@ -120,8 +120,8 @@ function run(){
     setStatus("No price data found. Build the bundle with  node src/fetch-data.js  (creates src/data.js), or drop CSVs in manual mode below.");
     return;
   }
-  const wantSpy=$("#bmSpy").checked, wantQqq=$("#bmQqq").checked;
-  const need=[...tickers]; if(wantSpy)need.push("SPY"); if(wantQqq)need.push("QQQ");
+  const wantSpy=$("#bmSpy").checked, wantQqq=$("#bmQqq").checked, wantSpus=$("#bmSpus").checked;
+  const need=[...tickers]; if(wantSpy)need.push("SPY"); if(wantQqq)need.push("QQQ"); if(wantSpus)need.push("SPUS");
   const years=parseInt($("#years").value);
   const weightMode=currentWeightMode();
   const rebalN=$("#rebal").value;
@@ -149,17 +149,18 @@ function run(){
 
   // benchmarks rebased on same axis
   const datasets=[];
-  let spyRets=null, spyIdx=null, qqqIdx=null;
+  let spyRets=null, spyIdx=null, qqqIdx=null, spusIdx=null;
   if(wantSpy && priceCache["SPY"]){ spyIdx=rebaseToBench(null,months,seriesMap(priceCache["SPY"])); spyRets=[]; for(let i=1;i<spyIdx.length;i++)spyRets.push(spyIdx[i]/spyIdx[i-1]-1); }
   if(wantQqq && priceCache["QQQ"]){ qqqIdx=rebaseToBench(null,months,seriesMap(priceCache["QQQ"])); }
+  if(wantSpus && priceCache["SPUS"]){ spusIdx=rebaseToBench(null,months,seriesMap(priceCache["SPUS"])); }
 
-  renderResults(months,index,spyIdx,qqqIdx,weightsAtStart,haveTickers,rf,spyRets);
+  renderResults(months,index,spyIdx,qqqIdx,spusIdx,weightsAtStart,haveTickers,rf,spyRets);
 }
 
 /* ============================================================
    RENDER RESULTS
    ============================================================ */
-function renderResults(months,index,spyIdx,qqqIdx,weights,tickers,rf,spyRets){
+function renderResults(months,index,spyIdx,qqqIdx,spusIdx,weights,tickers,rf,spyRets){
   $("#resultsEmpty").style.display="none";
   $("#results").style.display="block";
 
@@ -180,6 +181,7 @@ function renderResults(months,index,spyIdx,qqqIdx,weights,tickers,rf,spyRets){
   const ds=[{label:"My Index",data:index,borderColor:getColor('--idx'),backgroundColor:"transparent",borderWidth:2.4,pointRadius:0,tension:.15}];
   if(spyIdx) ds.push({label:"S&P 500 (SPY)",data:spyIdx,borderColor:getColor('--spy'),borderWidth:1.6,pointRadius:0,tension:.15,borderDash:[]});
   if(qqqIdx) ds.push({label:"Nasdaq-100 (QQQ)",data:qqqIdx,borderColor:getColor('--qqq'),borderWidth:1.6,pointRadius:0,tension:.15});
+  if(spusIdx) ds.push({label:"S&P 500 Sharia (SPUS)",data:spusIdx,borderColor:getColor('--spus'),borderWidth:1.6,pointRadius:0,tension:.15,spanGaps:false});
   if(chart) chart.destroy();
   chart=new Chart($("#chart"),{
     type:"line",
@@ -200,6 +202,7 @@ function renderResults(months,index,spyIdx,qqqIdx,weights,tickers,rf,spyRets){
   const rows=[["My Index",sIdx]];
   if(spyIdx) rows.push(["S&P 500 (SPY)",stats(spyIdx,rf,spyRets)]);
   if(qqqIdx) rows.push(["Nasdaq-100 (QQQ)",stats(qqqIdx,rf,spyRets)]);
+  if(spusIdx){ const c=spusIdx.filter(v=>v!=null); rows.push([`S&P 500 Sharia (SPUS)${c.length<months.length?` · from ${months[months.length-c.length]}`:""}`,stats(c,rf,null)]); }
   $("#statTable").innerHTML=
     `<tr><th>Series</th><th data-tip="Total price-return over the period (dividends excluded).">Total</th><th data-tip="Compound annual growth rate — the annualized return.">CAGR</th><th data-tip="Annualized volatility (monthly σ × √12) — how much returns swing.">Vol</th><th data-tip="Max drawdown — the largest peak-to-trough drop.">Max DD</th><th data-tip="Sharpe ratio — return above the risk-free rate per unit of volatility.">Sharpe</th></tr>`+
     rows.map(([nm,s])=>`<tr><td>${nm}</td>

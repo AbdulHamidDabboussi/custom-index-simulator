@@ -61,9 +61,13 @@ function simulate(tickers, months, weightMode, rebalN, ctx){
 }
 
 function rebaseToBench(series, months, fullSeriesMap){
-  // build benchmark index rebased to 100 at months[0]
-  const base=fullSeriesMap[months[0]];
-  return months.map(ym=> 100*fullSeriesMap[ym]/base);
+  // Rebase to 100 at the benchmark's FIRST month present in the axis; months before
+  // that (e.g. a benchmark that launched mid-window, like SPUS) are null so the line
+  // simply starts at inception instead of producing NaN.
+  const firstYm = months.find(ym => fullSeriesMap[ym] != null);
+  if(firstYm == null) return months.map(() => null);
+  const base = fullSeriesMap[firstYm];
+  return months.map(ym => fullSeriesMap[ym] != null ? 100*fullSeriesMap[ym]/base : null);
 }
 
 /* ---------- statistics ---------- */

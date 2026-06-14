@@ -111,6 +111,6 @@ const UNIVERSE = [
  ["AMT","American Tower","Real Estate",0.467],
  ["PYPL","PayPal","Financials",1.0]
 ];
-const BENCH = {SPY:"spy.us", QQQ:"qqq.us"};
+const BENCH = {SPY:"spy.us", QQQ:"qqq.us", SPUS:"spus.us"};
 
 if (typeof module !== "undefined" && module.exports) module.exports = { UNIVERSE, BENCH };

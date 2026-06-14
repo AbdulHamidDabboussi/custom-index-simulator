@@ -1,7 +1,7 @@
   :root{
     --bg:#0d1117; --panel:#161b22; --panel2:#1c2330; --border:#2d333b;
     --text:#e6edf3; --muted:#8b949e; --accent:#58a6ff; --accent2:#3fb950;
-    --warn:#d29922; --danger:#f85149; --idx:#f778ba; --spy:#58a6ff; --qqq:#3fb950;
+    --warn:#d29922; --danger:#f85149; --idx:#f778ba; --spy:#58a6ff; --qqq:#3fb950; --spus:#a371f7;
     --chip:#21262d;
   }
   *{box-sizing:border-box}

@@ -2,7 +2,7 @@
 
 Build your own stock index from the S&P 100, weight it however you like, and backtest it against the S&P 500 and Nasdaq-100 over ~10 years — all in a single HTML file that runs entirely in your browser.
 
-Pick constituents, choose **market-cap** or **custom %** weighting and a rebalance frequency, and the tool builds a "growth of 100" index and charts it against **SPY** and **QQQ** with a full set of summary statistics.
+Pick constituents, choose **market-cap** or **custom %** weighting and a rebalance frequency, and the tool builds a "growth of 100" index and charts it against **SPY**, **QQQ**, and the Sharia-screened **SPUS** with a full set of summary statistics.
 
 > Example: a market-cap-weighted "Big Tech" basket (AAPL, MSFT, NVDA, AMZN, GOOGL, META, AVGO, TSLA), quarterly rebalanced, returned **+1132%** over 2016–2026 vs **+254%** for the S&P 500 and **+571%** for the Nasdaq-100.
 
@@ -23,7 +23,7 @@ That's it. Pick a few stocks (or hit a preset), choose your weighting and rebala
 - **Two weighting schemes** — market-cap (size-weighted, like the real index) or custom % allocations (blanks split the remainder; auto-normalized to 100%).
 - **Rebalancing** — buy & hold, annual, quarterly, or monthly.
 - **Lookback windows** — 3 / 5 / 10 years or max available.
-- **Benchmarks** — compare against SPY (S&P 500) and QQQ (Nasdaq-100), rebased to the same start.
+- **Benchmarks** — compare against SPY (S&P 500), QQQ (Nasdaq-100), and SPUS (the Sharia-screened S&P 500), rebased to the same start. A benchmark that launched mid-window (SPUS, Dec 2019) starts its line at inception.
 - **Statistics** — total return, CAGR, annualized volatility, Sharpe ratio (with a configurable risk-free rate), max drawdown, and beta vs the S&P 500.
 - **Interactive chart** (Chart.js) plus performance-comparison and index-composition tables.
 
@@ -52,9 +52,10 @@ You can also drag Stooq CSV files into the app's manual-import dropzone to overr
 
 ## Data & modeling notes
 
-- **Price-return** — prices exclude dividends, applied consistently to the index and both benchmarks. This is a relative-performance tool, not a total-return calculator.
+- **Price-return** — prices exclude dividends, applied consistently to the index and all benchmarks. This is a relative-performance tool, not a total-return calculator.
 - **Market-cap weights use fixed (approximate, ~2024–25) share counts**, so they ignore buybacks/issuance over the backtest window.
-- **Coverage** — the current bundle has 103 of 104 symbols. Known gaps:
+- **Coverage** — the current bundle has 104 of 105 symbols. Notes:
+  - `SPUS` (Sharia-screened S&P 500 benchmark) launched Dec 2019, so on windows longer than ~6.5 years its line starts mid-chart and its stats cover only its own period.
   - `BK` (Bank of NY Mellon) — missing; not carried by Nasdaq's quote service (only Yahoo has it).
   - `LIN` (Linde) — history only from 2023-03, because Nasdaq resets it at Linde's 2023 corporate reorganization.
   - `DOW` (Dow Inc.) — history from 2019-03, which is correct: it spun off from DowDuPont then.
