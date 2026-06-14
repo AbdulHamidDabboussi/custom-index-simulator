@@ -44,7 +44,7 @@
     <div class="section">
       <h2>3 · Rebalance &amp; range</h2>
       <div class="row" style="margin-bottom:8px">
-        <label class="muted" style="width:110px">Rebalance</label>
+        <label class="muted" style="width:110px" data-tip="How often holdings are reset back to their target weights. Buy &amp; hold never rebalances.">Rebalance</label>
         <select id="rebal">
           <option value="none">Buy &amp; hold</option>
           <option value="12">Annually</option>
@@ -53,7 +53,7 @@
         </select>
       </div>
       <div class="row" style="margin-bottom:8px">
-        <label class="muted" style="width:110px">Lookback</label>
+        <label class="muted" style="width:110px" data-tip="Years of history to backtest. Capped by your shortest-history holding (data goes back ~10 years).">Lookback</label>
         <select id="years">
           <option value="3">3 years</option>
           <option value="5">5 years</option>
@@ -62,7 +62,7 @@
         </select>
       </div>
       <div class="row">
-        <label class="muted" style="width:110px">Risk-free %</label>
+        <label class="muted" style="width:110px" data-tip="Annual risk-free rate (e.g. a T-bill yield), used only to compute the Sharpe ratio.">Risk-free %</label>
         <input type="number" id="rf" value="0" step="0.5" style="width:80px">
         <span class="hint" style="margin:0">for Sharpe</span>
       </div>
@@ -70,8 +70,8 @@
 
     <div class="section">
       <h2>4 · Benchmarks</h2>
-      <label class="row" style="gap:6px"><input type="checkbox" id="bmSpy" checked style="width:auto"> <span class="legend-dot" style="background:var(--spy)"></span> S&amp;P 500 (SPY)</label>
-      <label class="row" style="gap:6px;margin-top:5px"><input type="checkbox" id="bmQqq" checked style="width:auto"> <span class="legend-dot" style="background:var(--qqq)"></span> Nasdaq-100 (QQQ)</label>
+      <label class="row" style="gap:6px"><input type="checkbox" id="bmSpy" checked style="width:auto"> <span class="legend-dot" style="background:var(--spy)"></span> <span data-tip="SPDR S&amp;P 500 ETF — tracks the 500 largest US companies; the standard US market benchmark.">S&amp;P 500 (SPY)</span></label>
+      <label class="row" style="gap:6px;margin-top:5px"><input type="checkbox" id="bmQqq" checked style="width:auto"> <span class="legend-dot" style="background:var(--qqq)"></span> <span data-tip="Invesco QQQ — tracks the Nasdaq-100: the 100 largest non-financial Nasdaq companies (tech-heavy).">Nasdaq-100 (QQQ)</span></label>
     </div>
 
     <button id="run" style="width:100%;padding:12px">▶  Run backtest</button>

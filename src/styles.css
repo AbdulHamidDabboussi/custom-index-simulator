@@ -64,3 +64,7 @@
   .warnbox{background:rgba(210,153,34,.1);border:1px solid var(--warn);border-radius:8px;padding:10px 12px;font-size:12.5px;color:#e3b341;margin-top:10px}
   .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:380px;color:var(--muted);text-align:center;gap:10px}
   .linklist{max-height:140px;overflow:auto;font-size:12px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:8px;margin-top:8px;line-height:1.9}
+  /* tooltips: dotted underline marks an explained term; #tip is the floating bubble (see app.js) */
+  [data-tip]{cursor:help}
+  [data-tip]:not(button){text-decoration:underline dotted var(--muted);text-underline-offset:3px}
+  #tip{position:fixed;z-index:1000;display:none;pointer-events:none;max-width:260px;background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:11.5px;font-weight:400;line-height:1.45;letter-spacing:normal;text-transform:none;text-align:left;box-shadow:0 6px 20px rgba(0,0,0,.5)}

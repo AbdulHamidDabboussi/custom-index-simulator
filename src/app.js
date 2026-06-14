@@ -164,16 +164,16 @@ function renderResults(months,index,spyIdx,qqqIdx,weights,tickers,rf,spyRets){
   $("#results").style.display="block";
 
   const sIdx=stats(index,rf,spyRets);
-  // stat cards
+  // stat cards  (4th element = tooltip explaining the metric)
   const cards=[
-    ["Total return",fmtPct(sIdx.totalRet),sIdx.totalRet>=0?"pos":"neg"],
-    ["CAGR",fmtPct(sIdx.cagr),sIdx.cagr>=0?"pos":"neg"],
-    ["Annualized vol",(sIdx.vol*100).toFixed(1)+"%",""],
-    ["Max drawdown",fmtPct(sIdx.mdd),"neg"],
-    ["Sharpe",fmtNum(sIdx.sharpe),sIdx.sharpe>=0?"pos":"neg"],
-    ["Beta vs S&P",sIdx.beta!=null?fmtNum(sIdx.beta):"—",""]
+    ["Total return",fmtPct(sIdx.totalRet),sIdx.totalRet>=0?"pos":"neg","Total price-return over the whole period, dividends excluded. +100% means the index doubled."],
+    ["CAGR",fmtPct(sIdx.cagr),sIdx.cagr>=0?"pos":"neg","Compound annual growth rate — the steady yearly rate that turns the start value into the end value."],
+    ["Annualized vol",(sIdx.vol*100).toFixed(1)+"%","","Annualized volatility — standard deviation of monthly returns × √12. Higher means bigger swings."],
+    ["Max drawdown",fmtPct(sIdx.mdd),"neg","Largest peak-to-trough drop over the period — the worst decline you'd have had to sit through."],
+    ["Sharpe",fmtNum(sIdx.sharpe),sIdx.sharpe>=0?"pos":"neg","Sharpe ratio — return above the risk-free rate per unit of volatility. Higher is better; above 1 is good."],
+    ["Beta vs S&P",sIdx.beta!=null?fmtNum(sIdx.beta):"—","","Sensitivity to the S&P 500: 1 moves with the market, above 1 swings more, below 1 swings less."]
   ];
-  $("#statGrid").innerHTML=cards.map(c=>`<div class="card"><div class="lbl">${c[0]}</div><div class="val ${c[2]}">${c[1]}</div></div>`).join("");
+  $("#statGrid").innerHTML=cards.map(c=>`<div class="card"><div class="lbl" data-tip="${c[3]}">${c[0]}</div><div class="val ${c[2]}">${c[1]}</div></div>`).join("");
 
   // chart
   const labels=months;
@@ -201,7 +201,7 @@ function renderResults(months,index,spyIdx,qqqIdx,weights,tickers,rf,spyRets){
   if(spyIdx) rows.push(["S&P 500 (SPY)",stats(spyIdx,rf,spyRets)]);
   if(qqqIdx) rows.push(["Nasdaq-100 (QQQ)",stats(qqqIdx,rf,spyRets)]);
   $("#statTable").innerHTML=
-    `<tr><th>Series</th><th>Total</th><th>CAGR</th><th>Vol</th><th>Max DD</th><th>Sharpe</th></tr>`+
+    `<tr><th>Series</th><th data-tip="Total price-return over the period (dividends excluded).">Total</th><th data-tip="Compound annual growth rate — the annualized return.">CAGR</th><th data-tip="Annualized volatility (monthly σ × √12) — how much returns swing.">Vol</th><th data-tip="Max drawdown — the largest peak-to-trough drop.">Max DD</th><th data-tip="Sharpe ratio — return above the risk-free rate per unit of volatility.">Sharpe</th></tr>`+
     rows.map(([nm,s])=>`<tr><td>${nm}</td>
       <td class="${s.totalRet>=0?'pos':'neg'}">${fmtPct(s.totalRet)}</td>
       <td class="${s.cagr>=0?'pos':'neg'}">${fmtPct(s.cagr)}</td>
@@ -212,7 +212,7 @@ function renderResults(months,index,spyIdx,qqqIdx,weights,tickers,rf,spyRets){
   // composition table
   const comp=tickers.map(t=>[t,weights[t]]).sort((a,b)=>b[1]-a[1]);
   $("#compTable").innerHTML=
-    `<tr><th>Ticker</th><th style="text-align:left">Name</th><th>Start weight</th></tr>`+
+    `<tr><th>Ticker</th><th style="text-align:left">Name</th><th data-tip="Each holding's share of the index at the start — and what it's reset to on each rebalance.">Start weight</th></tr>`+
     comp.map(([t,w])=>{
       const nm=(UNIVERSE.find(u=>u[0]===t)||[])[1]||"";
       return `<tr><td><b>${t}</b></td><td style="text-align:left;color:var(--muted)">${nm}</td><td>${(w*100).toFixed(1)}%</td></tr>`;
@@ -264,4 +264,26 @@ renderSelected();
   const m = bundleMeta();
   if(m) setStatus(`Bundled data: ${m.tickers} tickers · ${m.from} → ${m.through}. Pick stocks and run the backtest.`);
   else setStatus("No data bundle found. Build it once with  node src/fetch-data.js  (creates src/data.js). Manual CSV mode also works.");
+})();
+
+/* ============================================================
+   TOOLTIPS — one floating bubble for any element with [data-tip].
+   position:fixed, so it is never clipped by the scrolling panels.
+   ============================================================ */
+(function(){
+  const tip=document.createElement("div"); tip.id="tip"; document.body.appendChild(tip);
+  let cur=null;
+  function show(el){
+    const t=el.getAttribute("data-tip"); if(!t){hide();return;}
+    tip.textContent=t; tip.style.display="block";
+    tip.style.left="-9999px"; tip.style.top="0px";                 // render off-screen to measure
+    const r=el.getBoundingClientRect(), w=tip.offsetWidth, h=tip.offsetHeight;
+    const left=Math.max(8, Math.min(r.left + r.width/2 - w/2, window.innerWidth - w - 8));
+    let top=r.bottom + 6; if(top + h > window.innerHeight - 8) top=r.top - h - 6;   // flip above if no room below
+    tip.style.left=left+"px"; tip.style.top=top+"px";
+  }
+  function hide(){ tip.style.display="none"; cur=null; }
+  document.addEventListener("pointerover",e=>{ const el=e.target.closest && e.target.closest("[data-tip]"); if(el && el!==cur){ cur=el; show(el); } });
+  document.addEventListener("pointerout",e=>{ const el=e.target.closest && e.target.closest("[data-tip]"); if(el && !el.contains(e.relatedTarget)) hide(); });
+  document.addEventListener("scroll",hide,true);
 })();
