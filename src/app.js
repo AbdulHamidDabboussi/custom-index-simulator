@@ -80,13 +80,18 @@ function loadSeries(tkr){
   if(b && b.length){ priceCache[tkr] = b; return b; }
   return null;
 }
+// Effective lookback in years: a preset, or the "Custom…" input. 0 = "Max available".
+function lookbackYears(){
+  if($("#years").value === "custom"){ const n = parseInt($("#yearsCustom").value); return n > 0 ? n : 0; }
+  return parseInt($("#years").value);
+}
 // SPUS launched Dec 2019, so it can't cover a lookback longer than its own history.
 // When the selected lookback reaches back past SPUS's first month (or "Max available"),
 // disable + uncheck the SPUS benchmark; restore it when the window fits again.
 function updateSpusAvail(){
   const cb = $("#bmSpus"); if(!cb) return;
   const sp = bundle().SPUS, spusMonths = (sp && sp.length) || 0;
-  const N = parseInt($("#years").value);               // 0 = "Max available"
+  const N = lookbackYears();                           // 0 = "Max available"
   const fits = spusMonths > 0 && N > 0 && (N*12 + 1) <= spusMonths;
   const wasDisabled = cb.disabled;
   cb.disabled = !fits;
@@ -140,7 +145,7 @@ function run(){
   }
   const wantSpy=$("#bmSpy").checked, wantQqq=$("#bmQqq").checked, wantSpus=$("#bmSpus").checked;
   const need=[...tickers]; if(wantSpy)need.push("SPY"); if(wantQqq)need.push("QQQ"); if(wantSpus)need.push("SPUS");
-  const years=parseInt($("#years").value);
+  const years=lookbackYears();
   const weightMode=currentWeightMode();
   const rebalN=$("#rebal").value;
   const rf=parseFloat($("#rf").value)||0;
@@ -261,7 +266,13 @@ $("#weightSeg").addEventListener("click",e=>{
   renderSelected();
 });
 $("#run").onclick=run;
-$("#years").addEventListener("change", updateSpusAvail);   // SPUS depends on lookback range
+$("#years").addEventListener("change",()=>{               // show the custom input only for "Custom…"
+  const custom = $("#years").value==="custom";
+  $("#yearsCustomRow").style.display = custom ? "" : "none";
+  if(custom){ if(!$("#yearsCustom").value) $("#yearsCustom").value="7"; $("#yearsCustom").focus(); }
+  updateSpusAvail();                                       // SPUS availability depends on the lookback
+});
+$("#yearsCustom").addEventListener("input", updateSpusAvail);
 
 $("#genLinks").onclick=()=>{
   const need=[...selected.keys()]; if($("#bmSpy").checked)need.push("SPY"); if($("#bmQqq").checked)need.push("QQQ");

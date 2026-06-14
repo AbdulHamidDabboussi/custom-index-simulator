@@ -53,13 +53,18 @@
         </select>
       </div>
       <div class="row" style="margin-bottom:8px">
-        <label class="muted" style="width:110px" data-tip="Years of history to backtest. Capped by your shortest-history holding (data goes back ~10 years).">Lookback</label>
+        <label class="muted" style="width:110px" data-tip="Years of history to backtest. Capped by your shortest-history holding (data goes back ~10 years). Use a preset or pick Custom… to enter your own.">Lookback</label>
         <select id="years">
           <option value="3">3 years</option>
-          <option value="5">5 years</option>
-          <option value="10" selected>10 years</option>
+          <option value="5" selected>5 years</option>
+          <option value="10">10 years</option>
           <option value="0">Max available</option>
+          <option value="custom">Custom…</option>
         </select>
+      </div>
+      <div class="row" id="yearsCustomRow" style="margin-bottom:8px;display:none">
+        <label class="muted" style="width:110px">Custom years</label>
+        <input type="number" id="yearsCustom" min="1" step="1" placeholder="e.g. 7" style="width:90px">
       </div>
       <div class="row">
         <label class="muted" style="width:110px" data-tip="Annual risk-free rate (e.g. a T-bill yield), used only to compute the Sharpe ratio.">Risk-free %</label>

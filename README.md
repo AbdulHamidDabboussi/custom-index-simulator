@@ -22,7 +22,7 @@ That's it. Pick a few stocks (or hit a preset), choose your weighting and rebala
 - **Stock picker** over the full S&P 100 universe, grouped by sector, with search and one-click presets (Big Tech, Mega-cap mix).
 - **Two weighting schemes** — market-cap (size-weighted, like the real index) or custom % allocations (blanks split the remainder; auto-normalized to 100%).
 - **Rebalancing** — buy & hold, annual, quarterly, or monthly.
-- **Lookback windows** — 3 / 5 / 10 years or max available.
+- **Lookback windows** — 3 / 5 (default) / 10 years, max available, or a custom number of years.
 - **Benchmarks** — compare against SPY (S&P 500), QQQ (Nasdaq-100), and SPUS (the Sharia-screened S&P 500), rebased to the same start. SPUS launched Dec 2019, so it's automatically disabled for lookbacks longer than its history (available at 3y/5y, disabled at 10y / Max available).
 - **Statistics** — total return, CAGR, annualized volatility, Sharpe ratio (with a configurable risk-free rate), max drawdown, and beta vs the S&P 500.
 - **Interactive chart** (Chart.js) plus performance-comparison and index-composition tables.
