@@ -56,7 +56,9 @@ function renderSelected(){
   });
   el.querySelectorAll(".x").forEach(x=>x.onclick=()=>{selected.delete(x.dataset.t);renderSelected();renderPicker($("#search").value);});
   el.querySelectorAll("input.w").forEach(inp=>inp.oninput=()=>{
-    const o=selected.get(inp.dataset.t); o.customW = inp.value===""?null:parseFloat(inp.value);
+    const o=selected.get(inp.dataset.t);
+    o.customW = inp.value==="" ? null : Math.max(0, parseFloat(inp.value)||0);   // clamp ≥0, guard NaN
+    updateCustomSum();                                                            // keep the live sum in sync
   });
   if(mode==="custom") updateCustomSum();
 }
@@ -179,7 +181,6 @@ function run(){
   }
 
   // benchmarks rebased on same axis
-  const datasets=[];
   let spyRets=null, spyIdx=null, qqqIdx=null, spusIdx=null;
   if(wantSpy && priceCache["SPY"]){ spyIdx=rebaseToBench(null,months,seriesMap(priceCache["SPY"])); spyRets=[]; for(let i=1;i<spyIdx.length;i++)spyRets.push(spyIdx[i]/spyIdx[i-1]-1); }
   if(wantQqq && priceCache["QQQ"]){ qqqIdx=rebaseToBench(null,months,seriesMap(priceCache["QQQ"])); }
@@ -239,9 +240,15 @@ function renderResults(months,index,spyIdx,qqqIdx,spusIdx,weights,tickers,rf,spy
   // comparison table
   const rows=[];
   if(hasIndex) rows.push(["My Index",sIdx]);
-  if(spyIdx) rows.push(["S&P 500 (SPY)",stats(spyIdx,rf,spyRets)]);
-  if(qqqIdx) rows.push(["Nasdaq-100 (QQQ)",stats(qqqIdx,rf,spyRets)]);
-  if(spusIdx){ const c=spusIdx.filter(v=>v!=null); rows.push([`S&P 500 Sharia (SPUS)${c.length<months.length?` · from ${months[months.length-c.length]}`:""}`,stats(c,rf,null)]); }
+  const benchRow=(label,idx)=>{                                  // filter leading nulls so a short
+    if(!idx) return;                                             // benchmark (e.g. SPUS) reports stats
+    const c=idx.filter(v=>v!=null);                              // over its own window, never NaN
+    const suffix = c.length<months.length ? ` · from ${months[months.length-c.length]}` : "";
+    rows.push([label+suffix, stats(c,rf,null)]);
+  };
+  benchRow("S&P 500 (SPY)", spyIdx);
+  benchRow("Nasdaq-100 (QQQ)", qqqIdx);
+  benchRow("S&P 500 Sharia (SPUS)", spusIdx);
   $("#statTable").innerHTML=
     `<tr><th>Series</th><th data-tip="Total price-return over the period (dividends excluded).">Total</th><th data-tip="Compound annual growth rate — the annualized return.">CAGR</th><th data-tip="Annualized volatility (monthly σ × √12) — how much returns swing.">Vol</th><th data-tip="Max drawdown — the largest peak-to-trough drop.">Max DD</th><th data-tip="Sharpe ratio — return above the risk-free rate per unit of volatility.">Sharpe</th></tr>`+
     rows.map(([nm,s])=>`<tr><td>${nm}</td>
