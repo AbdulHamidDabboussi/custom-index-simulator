@@ -80,5 +80,16 @@ console.log("TEST 7: custom weights with blanks normalize");
   check("weights sum to 1", approx(w.A + w.B + w.C, 1, 1e-9));
 }
 
+console.log("TEST 8: equal weighting ignores size and custom inputs");
+{ const priceCache = { A: mk([100, 100]), B: mk([100, 100]), C: mk([100, 100]) };
+  const m = buildMonthAxis([priceCache.A, priceCache.B, priceCache.C], 0);
+  // lopsided sharesOut + customWeights are passed in; equal mode must ignore both
+  const { index, weightsAtStart: w } = simulate(["A", "B", "C"], m, "equal", "none", { priceCache, sharesOut: { A: 99, B: 1, C: 1 }, customWeights: { A: 90 } });
+  check("equal A=1/3", approx(w.A, 1 / 3, 1e-9), w.A);
+  check("equal B=1/3", approx(w.B, 1 / 3, 1e-9), w.B);
+  check("equal weights sum to 1", approx(w.A + w.B + w.C, 1, 1e-9));
+  check("flat prices -> index 100", approx(index[1], 100), index);
+}
+
 console.log(`\n==== ${pass} passed, ${fail} failed ====`);
 process.exit(fail ? 1 : 0);

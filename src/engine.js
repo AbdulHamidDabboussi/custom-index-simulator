@@ -33,6 +33,8 @@ function simulate(tickers, months, weightMode, rebalN, ctx){
     if(weightMode==="cap"){
       let tot=0; tickers.forEach(t=>{ const mc=(sharesOut[t]||1)*maps[t][ym]; w[t]=mc; tot+=mc; });
       tickers.forEach(t=>w[t]/=tot);
+    } else if(weightMode==="equal"){
+      tickers.forEach(t=>w[t]=1/tickers.length);
     } else { // custom
       let given=0, blanks=[];
       tickers.forEach(t=>{ const cw=customWeights[t]; if(cw!=null){w[t]=cw;given+=cw;} else blanks.push(t); });

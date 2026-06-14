@@ -286,9 +286,12 @@ $("#weightSeg").addEventListener("click",e=>{
   if(e.target.tagName!=="BUTTON")return;
   $("#weightSeg").querySelectorAll("button").forEach(b=>b.classList.remove("on"));
   e.target.classList.add("on");
-  $("#weightHint").innerHTML = e.target.dataset.w==="cap"
-    ? "Weighted by company size (shares × price), rebalanced each period — like the S&amp;P 500."
-    : "Set each stock's % allocation. Blanks share the remainder; auto-normalized to 100%.";
+  const hints={
+    cap:"Weighted by company size (shares × price), rebalanced each period — like the S&amp;P 500.",
+    equal:"Every holding gets the same weight (1/N), rebalanced back to equal each period.",
+    custom:"Set each stock's % allocation. Blanks share the remainder; auto-normalized to 100%."
+  };
+  $("#weightHint").innerHTML = hints[e.target.dataset.w];
   renderSelected();
 });
 $("#run").onclick=run;
