@@ -176,7 +176,7 @@ function currentWeightMode(){ return $("#weightSeg .on").dataset.w; }
    DATA  (bundled offline data + manual CSV override)
    ============================================================ */
 // Primary source: the bundled monthly history in data.js (window.PRICE_DATA),
-// produced server-side by `node outputs/fetch-data.js` — no browser CORS, no
+// produced server-side by `node src/fetch-data.js` — no browser CORS, no
 // rate limits, instant. Manual CSV upload (below) overrides it per ticker.
 function bundle(){ return (typeof window !== "undefined" && window.PRICE_DATA) || {}; }
 function bundleMeta(){ return (typeof window !== "undefined" && window.PRICE_DATA_META) || null; }
@@ -308,7 +308,7 @@ function run(){
   const tickers=[...selected.keys()];
   if(tickers.length<1){ setStatus("Pick at least one stock first."); return; }
   if(!Object.keys(bundle()).length && !Object.keys(priceCache).length){
-    setStatus("No price data found. Build the bundle with  node outputs/fetch-data.js  (creates outputs/data.js), or drop CSVs in manual mode below.");
+    setStatus("No price data found. Build the bundle with  node src/fetch-data.js  (creates src/data.js), or drop CSVs in manual mode below.");
     return;
   }
   const wantSpy=$("#bmSpy").checked, wantQqq=$("#bmQqq").checked;
@@ -323,7 +323,7 @@ function run(){
 
   const haveTickers=tickers.filter(t=>priceCache[t]);
   if(haveTickers.length===0){
-    setStatus(`No bundled data for your picks (${missing.join(", ")}). Rebuild with  node outputs/fetch-data.js, or add them via manual CSV mode below.`);
+    setStatus(`No bundled data for your picks (${missing.join(", ")}). Rebuild with  node src/fetch-data.js, or add them via manual CSV mode below.`);
     return;
   }
   if(missing.length) setStatus(`Loaded ${need.length-missing.length}/${need.length}. Missing: ${missing.join(", ")} — not in the bundle; rebuild or add manually. Continuing with what loaded.`);
@@ -452,5 +452,5 @@ renderSelected();
 (function(){
   const m = bundleMeta();
   if(m) setStatus(`Bundled data: ${m.tickers} tickers · ${m.from} → ${m.through}. Pick stocks and run the backtest.`);
-  else setStatus("No data bundle found. Build it once with  node outputs/fetch-data.js  (creates outputs/data.js). Manual CSV mode also works.");
+  else setStatus("No data bundle found. Build it once with  node src/fetch-data.js  (creates src/data.js). Manual CSV mode also works.");
 })();

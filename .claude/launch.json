@@ -4,7 +4,7 @@
     {
       "name": "index-simulator",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8765", "--directory", "outputs"],
+      "runtimeArgs": ["-m", "http.server", "8765", "--directory", "src"],
       "port": 8765
     }
   ]
