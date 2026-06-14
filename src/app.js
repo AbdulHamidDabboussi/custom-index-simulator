@@ -212,7 +212,7 @@ function renderResults(months,index,spyIdx,qqqIdx,weights,tickers,rf,spyRets){
   // composition table
   const comp=tickers.map(t=>[t,weights[t]]).sort((a,b)=>b[1]-a[1]);
   $("#compTable").innerHTML=
-    `<tr><th>Ticker</th><th>Name</th><th>Start weight</th></tr>`+
+    `<tr><th>Ticker</th><th style="text-align:left">Name</th><th>Start weight</th></tr>`+
     comp.map(([t,w])=>{
       const nm=(UNIVERSE.find(u=>u[0]===t)||[])[1]||"";
       return `<tr><td><b>${t}</b></td><td style="text-align:left;color:var(--muted)">${nm}</td><td>${(w*100).toFixed(1)}%</td></tr>`;
