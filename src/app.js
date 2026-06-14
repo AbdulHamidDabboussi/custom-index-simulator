@@ -80,10 +80,11 @@ function loadSeries(tkr){
   if(b && b.length){ priceCache[tkr] = b; return b; }
   return null;
 }
-// Effective lookback in years: a preset, or the "Custom…" input. 0 = "Max available".
+// Effective lookback in years: a preset (may be fractional, e.g. 0.5 = 6 months),
+// or the "Custom…" input. 0 = "Max available".
 function lookbackYears(){
   if($("#years").value === "custom"){ const n = parseInt($("#yearsCustom").value); return n > 0 ? n : 0; }
-  return parseInt($("#years").value);
+  return parseFloat($("#years").value);
 }
 // SPUS launched Dec 2019, so it can't cover a lookback longer than its own history.
 // When the selected lookback reaches back past SPUS's first month (or "Max available"),
