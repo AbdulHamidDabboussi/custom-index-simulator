@@ -138,13 +138,14 @@ function setStatus(msg){ $("#status").textContent=msg; }
 
 function run(){
   const tickers=[...selected.keys()];
-  if(tickers.length<1){ setStatus("Pick at least one stock first."); return; }
   if(!Object.keys(bundle()).length && !Object.keys(priceCache).length){
     setStatus("No price data found. Build the bundle with  node src/fetch-data.js  (creates src/data.js), or drop CSVs in manual mode below.");
     return;
   }
   const wantSpy=$("#bmSpy").checked, wantQqq=$("#bmQqq").checked, wantSpus=$("#bmSpus").checked;
-  const need=[...tickers]; if(wantSpy)need.push("SPY"); if(wantQqq)need.push("QQQ"); if(wantSpus)need.push("SPUS");
+  const benches=[]; if(wantSpy)benches.push("SPY"); if(wantQqq)benches.push("QQQ"); if(wantSpus)benches.push("SPUS");
+  if(tickers.length<1 && benches.length<1){ setStatus("Pick at least one stock — or select a benchmark to compare benchmarks against each other."); return; }
+  const need=[...tickers, ...benches];
   const years=lookbackYears();
   const weightMode=currentWeightMode();
   const rebalN=$("#rebal").value;
@@ -154,21 +155,27 @@ function run(){
   need.forEach(t=>{ if(!loadSeries(t)) missing.push(t); });
 
   const haveTickers=tickers.filter(t=>priceCache[t]);
-  if(haveTickers.length===0){
-    setStatus(`No bundled data for your picks (${missing.join(", ")}). Rebuild with  node src/fetch-data.js, or add them via manual CSV mode below.`);
+  const haveBenches=benches.filter(t=>priceCache[t]);
+  if(haveTickers.length===0 && haveBenches.length===0){
+    setStatus(`No bundled data for your selection (${missing.join(", ")}). Rebuild with  node src/fetch-data.js, or add it via manual CSV mode below.`);
     return;
   }
   if(missing.length) setStatus(`Loaded ${need.length-missing.length}/${need.length}. Missing: ${missing.join(", ")} — not in the bundle; rebuild or add manually. Continuing with what loaded.`);
   else setStatus(`Loaded ${need.length} series from the bundle.`);
 
-  // axis = common months across constituents that loaded (+ benchmarks if present)
-  const axisSeries=[...haveTickers.map(t=>priceCache[t])];
-  const months=buildMonthAxis(axisSeries, years);
-  if(months.length<6){ setStatus("Not enough overlapping monthly data across your picks for a meaningful backtest. Try different/longer-history stocks."); return; }
+  // axis = common months across the loaded constituents — or, if none were picked,
+  // across the selected benchmarks (so benchmarks can be compared on their own)
+  const axisSource = haveTickers.length ? haveTickers : haveBenches;
+  const months=buildMonthAxis(axisSource.map(t=>priceCache[t]), years);
+  if(months.length<6){ setStatus("Not enough overlapping monthly data across your selection for a meaningful backtest. Try a different/longer lookback or set."); return; }
 
-  const sharesOut={}; UNIVERSE.forEach(([t,,,sh])=>sharesOut[t]=sh);
-  const customWeights={}; selected.forEach((v,t)=>customWeights[t]=v.customW);
-  const {index,weightsAtStart}=simulate(haveTickers, months, weightMode, rebalN, {priceCache, sharesOut, customWeights});
+  // build the user's index only if they actually picked constituents
+  let index=null, weightsAtStart=null;
+  if(haveTickers.length){
+    const sharesOut={}; UNIVERSE.forEach(([t,,,sh])=>sharesOut[t]=sh);
+    const customWeights={}; selected.forEach((v,t)=>customWeights[t]=v.customW);
+    ({index,weightsAtStart}=simulate(haveTickers, months, weightMode, rebalN, {priceCache, sharesOut, customWeights}));
+  }
 
   // benchmarks rebased on same axis
   const datasets=[];
@@ -187,21 +194,28 @@ function renderResults(months,index,spyIdx,qqqIdx,spusIdx,weights,tickers,rf,spy
   $("#resultsEmpty").style.display="none";
   $("#results").style.display="block";
 
-  const sIdx=stats(index,rf,spyRets);
-  // stat cards  (4th element = tooltip explaining the metric)
-  const cards=[
-    ["Total return",fmtPct(sIdx.totalRet),sIdx.totalRet>=0?"pos":"neg","Total price-return over the whole period, dividends excluded. +100% means the index doubled."],
-    ["CAGR",fmtPct(sIdx.cagr),sIdx.cagr>=0?"pos":"neg","Compound annual growth rate — the steady yearly rate that turns the start value into the end value."],
-    ["Annualized vol",(sIdx.vol*100).toFixed(1)+"%","","Annualized volatility — standard deviation of monthly returns × √12. Higher means bigger swings."],
-    ["Max drawdown",fmtPct(sIdx.mdd),"neg","Largest peak-to-trough drop over the period — the worst decline you'd have had to sit through."],
-    ["Sharpe",fmtNum(sIdx.sharpe),sIdx.sharpe>=0?"pos":"neg","Sharpe ratio — return above the risk-free rate per unit of volatility. Higher is better; above 1 is good."],
-    ["Beta vs S&P",sIdx.beta!=null?fmtNum(sIdx.beta):"—","","Sensitivity to the S&P 500: 1 moves with the market, above 1 swings more, below 1 swings less."]
-  ];
-  $("#statGrid").innerHTML=cards.map(c=>`<div class="card"><div class="lbl" data-tip="${c[3]}">${c[0]}</div><div class="val ${c[2]}">${c[1]}</div></div>`).join("");
+  const hasIndex = index != null;
+  const sIdx = hasIndex ? stats(index,rf,spyRets) : null;
+  // stat cards (index only; hidden when comparing benchmarks on their own)
+  if(hasIndex){
+    const cards=[
+      ["Total return",fmtPct(sIdx.totalRet),sIdx.totalRet>=0?"pos":"neg","Total price-return over the whole period, dividends excluded. +100% means the index doubled."],
+      ["CAGR",fmtPct(sIdx.cagr),sIdx.cagr>=0?"pos":"neg","Compound annual growth rate — the steady yearly rate that turns the start value into the end value."],
+      ["Annualized vol",(sIdx.vol*100).toFixed(1)+"%","","Annualized volatility — standard deviation of monthly returns × √12. Higher means bigger swings."],
+      ["Max drawdown",fmtPct(sIdx.mdd),"neg","Largest peak-to-trough drop over the period — the worst decline you'd have had to sit through."],
+      ["Sharpe",fmtNum(sIdx.sharpe),sIdx.sharpe>=0?"pos":"neg","Sharpe ratio — return above the risk-free rate per unit of volatility. Higher is better; above 1 is good."],
+      ["Beta vs S&P",sIdx.beta!=null?fmtNum(sIdx.beta):"—","","Sensitivity to the S&P 500: 1 moves with the market, above 1 swings more, below 1 swings less."]
+    ];
+    $("#statGrid").innerHTML=cards.map(c=>`<div class="card"><div class="lbl" data-tip="${c[3]}">${c[0]}</div><div class="val ${c[2]}">${c[1]}</div></div>`).join("");
+    $("#statGrid").style.display="";
+  } else {
+    $("#statGrid").innerHTML=""; $("#statGrid").style.display="none";
+  }
 
   // chart
   const labels=months;
-  const ds=[{label:"My Index",data:index,borderColor:getColor('--idx'),backgroundColor:"transparent",borderWidth:2.4,pointRadius:0,tension:.15}];
+  const ds=[];
+  if(hasIndex) ds.push({label:"My Index",data:index,borderColor:getColor('--idx'),backgroundColor:"transparent",borderWidth:2.4,pointRadius:0,tension:.15});
   if(spyIdx) ds.push({label:"S&P 500 (SPY)",data:spyIdx,borderColor:getColor('--spy'),borderWidth:1.6,pointRadius:0,tension:.15,borderDash:[]});
   if(qqqIdx) ds.push({label:"Nasdaq-100 (QQQ)",data:qqqIdx,borderColor:getColor('--qqq'),borderWidth:1.6,pointRadius:0,tension:.15});
   if(spusIdx) ds.push({label:"S&P 500 Sharia (SPUS)",data:spusIdx,borderColor:getColor('--spus'),borderWidth:1.6,pointRadius:0,tension:.15,spanGaps:false});
@@ -222,7 +236,8 @@ function renderResults(months,index,spyIdx,qqqIdx,spusIdx,weights,tickers,rf,spy
   });
 
   // comparison table
-  const rows=[["My Index",sIdx]];
+  const rows=[];
+  if(hasIndex) rows.push(["My Index",sIdx]);
   if(spyIdx) rows.push(["S&P 500 (SPY)",stats(spyIdx,rf,spyRets)]);
   if(qqqIdx) rows.push(["Nasdaq-100 (QQQ)",stats(qqqIdx,rf,spyRets)]);
   if(spusIdx){ const c=spusIdx.filter(v=>v!=null); rows.push([`S&P 500 Sharia (SPUS)${c.length<months.length?` · from ${months[months.length-c.length]}`:""}`,stats(c,rf,null)]); }
@@ -235,14 +250,17 @@ function renderResults(months,index,spyIdx,qqqIdx,spusIdx,weights,tickers,rf,spy
       <td class="neg">${fmtPct(s.mdd)}</td>
       <td>${fmtNum(s.sharpe)}</td></tr>`).join("");
 
-  // composition table
-  const comp=tickers.map(t=>[t,weights[t]]).sort((a,b)=>b[1]-a[1]);
-  $("#compTable").innerHTML=
-    `<tr><th>Ticker</th><th style="text-align:left">Name</th><th data-tip="Each holding's share of the index at the start — and what it's reset to on each rebalance.">Start weight</th></tr>`+
-    comp.map(([t,w])=>{
-      const nm=(UNIVERSE.find(u=>u[0]===t)||[])[1]||"";
-      return `<tr><td><b>${t}</b></td><td style="text-align:left;color:var(--muted)">${nm}</td><td>${(w*100).toFixed(1)}%</td></tr>`;
-    }).join("");
+  // composition table (index only; hidden when comparing benchmarks on their own)
+  $("#compSection").style.display = hasIndex ? "" : "none";
+  if(hasIndex){
+    const comp=tickers.map(t=>[t,weights[t]]).sort((a,b)=>b[1]-a[1]);
+    $("#compTable").innerHTML=
+      `<tr><th>Ticker</th><th style="text-align:left">Name</th><th data-tip="Each holding's share of the index at the start — and what it's reset to on each rebalance.">Start weight</th></tr>`+
+      comp.map(([t,w])=>{
+        const nm=(UNIVERSE.find(u=>u[0]===t)||[])[1]||"";
+        return `<tr><td><b>${t}</b></td><td style="text-align:left;color:var(--muted)">${nm}</td><td>${(w*100).toFixed(1)}%</td></tr>`;
+      }).join("");
+  }
 
   $("#results").scrollIntoView({behavior:"smooth",block:"start"});
 }

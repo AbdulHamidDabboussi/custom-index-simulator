@@ -96,8 +96,8 @@
   <div class="right">
     <div id="resultsEmpty" class="empty">
       <div style="font-size:40px">📈</div>
-      <div><b>Build your index on the left, then hit “Load data &amp; simulate.”</b></div>
-      <div class="muted" style="max-width:440px">Pick a few S&amp;P 100 names, choose market-cap or custom weights, and the simulator pulls ~10 years of monthly closes and charts your index against SPY and the Nasdaq-100.</div>
+      <div><b>Build your index on the left, then hit “Run backtest.”</b></div>
+      <div class="muted" style="max-width:440px">Pick a few S&amp;P 100 names, choose market-cap or custom weights, and chart your index against SPY, the Nasdaq-100, and SPUS — or pick nothing and just compare the benchmarks to each other.</div>
     </div>
 
     <div id="results" style="display:none">
@@ -105,9 +105,11 @@
       <div class="chartbox"><canvas id="chart"></canvas></div>
       <h2 style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:22px 0 0">Performance comparison</h2>
       <table id="statTable"></table>
-      <h2 style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:22px 0 0">Index composition (start-of-period weights)</h2>
-      <table id="compTable"></table>
-      <p class="hint">Prices are <b>price-return</b> closes (dividends excluded), applied consistently to your index and both benchmarks. Market-cap weights use approximate fixed share counts and so ignore buybacks/issuance over time. Data: <a href="https://stooq.com" target="_blank">Stooq</a>. This is a modeling tool, not investment advice.</p>
+      <div id="compSection">
+        <h2 style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:22px 0 0">Index composition (start-of-period weights)</h2>
+        <table id="compTable"></table>
+      </div>
+      <p class="hint">Prices are <b>price-return</b> closes (dividends excluded), applied consistently to your index and the benchmarks. Market-cap weights use approximate fixed share counts and so ignore buybacks/issuance over time. Data: <a href="https://www.nasdaq.com" target="_blank">Nasdaq</a>. This is a modeling tool, not investment advice.</p>
     </div>
   </div>
 </div>

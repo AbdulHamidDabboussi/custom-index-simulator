@@ -57,7 +57,7 @@ The pipeline spans `universe.js` (data) → `engine.js` (math) → `app.js` (UI/
    - **cap**: `weight ∝ sharesOut · price`, normalized.
    - **custom**: user `%` values; blank tickers split the remaining `%` equally; the whole vector is auto-normalized to 1.
 6. **`stats`** — total return, CAGR, annualized vol (monthly σ × √12), Sharpe (using the risk-free input), max drawdown, and beta vs SPY.
-7. **`rebaseToBench`** + **`renderResults`** — benchmarks (SPY, QQQ, SPUS) are rebased to 100 on the same month axis. SPUS launched 2019-12, so `updateSpusAvail()` disables it when the lookback exceeds its history; `rebaseToBench` also null-pads any benchmark that starts mid-window (rebasing to 100 at its first available month) as a safety net. Results render as stat cards, a Chart.js line chart, and comparison/composition tables.
+7. **`rebaseToBench`** + **`renderResults`** — benchmarks (SPY, QQQ, SPUS) are rebased to 100 on the same month axis. SPUS launched 2019-12, so `updateSpusAvail()` disables it when the lookback exceeds its history; `rebaseToBench` also null-pads any benchmark that starts mid-window (rebasing to 100 at its first available month) as a safety net. Results render as stat cards, a Chart.js line chart, and comparison/composition tables. **Constituents are optional:** if none are picked but ≥1 benchmark is, `run()` skips the index (the month axis comes from the selected benchmarks instead) and `renderResults` hides the stat cards + composition section — a benchmark-vs-benchmark comparison.
 
 ### Modeling caveats baked in (don't "fix" without intent)
 - Prices are **price-return** (dividends excluded), applied consistently to the index and both benchmarks.
