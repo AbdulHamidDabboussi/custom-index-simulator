@@ -23,7 +23,7 @@ That's it. Pick a few stocks (or hit a preset), choose your weighting and rebala
 - **Two weighting schemes** — market-cap (size-weighted, like the real index) or custom % allocations (blanks split the remainder; auto-normalized to 100%).
 - **Rebalancing** — buy & hold, annual, quarterly, or monthly.
 - **Lookback windows** — 3 / 5 / 10 years or max available.
-- **Benchmarks** — compare against SPY (S&P 500), QQQ (Nasdaq-100), and SPUS (the Sharia-screened S&P 500), rebased to the same start. A benchmark that launched mid-window (SPUS, Dec 2019) starts its line at inception.
+- **Benchmarks** — compare against SPY (S&P 500), QQQ (Nasdaq-100), and SPUS (the Sharia-screened S&P 500), rebased to the same start. SPUS launched Dec 2019, so it's automatically disabled for lookbacks longer than its history (available at 3y/5y, disabled at 10y / Max available).
 - **Statistics** — total return, CAGR, annualized volatility, Sharpe ratio (with a configurable risk-free rate), max drawdown, and beta vs the S&P 500.
 - **Interactive chart** (Chart.js) plus performance-comparison and index-composition tables.
 
@@ -55,7 +55,7 @@ You can also drag Stooq CSV files into the app's manual-import dropzone to overr
 - **Price-return** — prices exclude dividends, applied consistently to the index and all benchmarks. This is a relative-performance tool, not a total-return calculator.
 - **Market-cap weights use fixed (approximate, ~2024–25) share counts**, so they ignore buybacks/issuance over the backtest window.
 - **Coverage** — the current bundle has 104 of 105 symbols. Notes:
-  - `SPUS` (Sharia-screened S&P 500 benchmark) launched Dec 2019, so on windows longer than ~6.5 years its line starts mid-chart and its stats cover only its own period.
+  - `SPUS` (Sharia-screened S&P 500 benchmark) launched Dec 2019, so it's auto-disabled for lookbacks longer than its ~6.5-year history (e.g. 10y / Max available).
   - `BK` (Bank of NY Mellon) — missing; not carried by Nasdaq's quote service (only Yahoo has it).
   - `LIN` (Linde) — history only from 2023-03, because Nasdaq resets it at Linde's 2023 corporate reorganization.
   - `DOW` (Dow Inc.) — history from 2019-03, which is correct: it spun off from DowDuPont then.

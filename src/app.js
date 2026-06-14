@@ -80,6 +80,24 @@ function loadSeries(tkr){
   if(b && b.length){ priceCache[tkr] = b; return b; }
   return null;
 }
+// SPUS launched Dec 2019, so it can't cover a lookback longer than its own history.
+// When the selected lookback reaches back past SPUS's first month (or "Max available"),
+// disable + uncheck the SPUS benchmark; restore it when the window fits again.
+function updateSpusAvail(){
+  const cb = $("#bmSpus"); if(!cb) return;
+  const sp = bundle().SPUS, spusMonths = (sp && sp.length) || 0;
+  const N = parseInt($("#years").value);               // 0 = "Max available"
+  const fits = spusMonths > 0 && N > 0 && (N*12 + 1) <= spusMonths;
+  const wasDisabled = cb.disabled;
+  cb.disabled = !fits;
+  if(!fits) cb.checked = false;                        // exclude from the run
+  else if(wasDisabled) cb.checked = true;              // restore when it fits again
+  const label = cb.closest("label");
+  if(label){
+    label.style.opacity = fits ? "" : ".4";
+    label.title = fits ? "" : "SPUS only has data since Dec 2019 — unavailable for a lookback this long.";
+  }
+}
 function parseStooqCSV(text){
   // header: Date,Open,High,Low,Close,Volume   (monthly)
   const lines=text.trim().split(/\r?\n/);
@@ -243,6 +261,7 @@ $("#weightSeg").addEventListener("click",e=>{
   renderSelected();
 });
 $("#run").onclick=run;
+$("#years").addEventListener("change", updateSpusAvail);   // SPUS depends on lookback range
 
 $("#genLinks").onclick=()=>{
   const need=[...selected.keys()]; if($("#bmSpy").checked)need.push("SPY"); if($("#bmQqq").checked)need.push("QQQ");
@@ -261,6 +280,7 @@ dz.addEventListener("drop",async e=>{
 
 renderPicker();
 renderSelected();
+updateSpusAvail();   // set initial SPUS benchmark state for the default lookback
 
 /* startup: report bundle freshness (or how to build it) */
 (function(){
